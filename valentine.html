@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Will you be my Valentine? 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose: #e8315a;
+    --blush: #f9a8c0;
+    --petal: #fff0f5;
+    --wine: #7b1535;
+    --cream: #fff8f0;
+    --ink: #3d1a24;
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--petal);
+    font-family: 'Lora', serif;
+    overflow-x: hidden;
+  }
+
+  /* ── FALLING HEARTS ─────────────────────────── */
+  #canvas {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── PAGE LAYOUT ─────────────────────────────── */
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 3rem 1.5rem 4rem;
+    gap: 2.8rem;
+  }
+
+  /* ── TITLE ───────────────────────────────────── */
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    color: var(--wine);
+    text-align: center;
+    line-height: 1.25;
+    animation: fadeDown .9s ease both;
+  }
+  .hero-title em { color: var(--rose); font-style: italic; }
+  @keyframes fadeDown {
+    from { opacity:0; transform:translateY(-24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── CAT STICKERS ROW ────────────────────────── */
+  .cats-row {
+    display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp .9s .2s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .cat-sticker {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    border: 3px solid var(--blush);
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 52px;
+    box-shadow: 0 4px 20px rgba(232,49,90,.18);
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .cat-sticker:hover { transform: scale(1.18) rotate(-4deg); }
+  .cat-sticker .label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(232,49,90,.78);
+    color: white; font-size: 9px; letter-spacing: .05em;
+    font-family: 'Lora', serif;
+    text-align: center; padding: 2px 0;
+  }
+
+  /* ── BIG HEART ───────────────────────────────── */
+  .big-heart {
+    font-size: 5.5rem;
+    animation: heartbeat 1.3s ease-in-out infinite;
+    filter: drop-shadow(0 4px 18px rgba(232,49,90,.4));
+  }
+  @keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    14%      { transform: scale(1.3); }
+    28%      { transform: scale(1); }
+    42%      { transform: scale(1.18); }
+    56%      { transform: scale(1); }
+  }
+
+  /* ── YES / NO BUTTONS ───────────────────────── */
+  .btn-row { display: flex; gap: 1rem; }
+  .btn {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    padding: .7rem 2.4rem;
+    border-radius: 50px;
+    border: none; cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-yes {
+    background: var(--rose); color: white;
+    box-shadow: 0 4px 18px rgba(232,49,90,.4);
+  }
+  .btn-yes:hover { transform: scale(1.12); box-shadow: 0 6px 28px rgba(232,49,90,.55); }
+  .btn-no {
+    background: white; color: var(--rose);
+    border: 2px solid var(--blush);
+  }
+  .btn-no:hover { transform: scale(.88); }
+
+  /* ── ENVELOPE / LETTER ───────────────────────── */
+  .envelope-wrap { display: flex; flex-direction: column; align-items: center; gap: .6rem; animation: fadeUp .9s .4s ease both; }
+
+  .open-btn {
+    background: none; border: 2px solid var(--rose); color: var(--rose);
+    font-family: 'Playfair Display', serif; font-size: 1.1rem;
+    padding: .55rem 1.8rem; border-radius: 50px;
+    cursor: pointer; transition: background .2s, color .2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .open-btn:hover { background: var(--rose); color: white; }
+
+  /* envelope card */
+  .envelope-card {
+    width: min(460px, 94vw);
+    background: var(--cream);
+    border: 2px solid #f5c6d8;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(123,21,53,.14);
+    max-height: 0; opacity: 0;
+    transition: max-height .6s cubic-bezier(.4,0,.2,1), opacity .4s ease, margin-top .3s;
+  }
+  .envelope-card.open { max-height: 700px; opacity: 1; margin-top: .4rem; }
+
+  .env-flap {
+    background: linear-gradient(135deg, #f9c8d8, #f5a8bf);
+    height: 60px;
+    clip-path: polygon(0 0,100% 0,50% 100%);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 6px; font-size: 1.8rem;
+  }
+
+  .letter-inner { padding: 1.8rem 2.2rem 2rem; }
+  .letter-inner h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem; font-style: italic;
+    color: var(--wine); margin-bottom: 1rem;
+  }
+  .letter-inner p {
+    font-size: 1rem; line-height: 1.85;
+    color: var(--ink); margin-bottom: .85rem;
+  }
+  .letter-inner .sign {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 1.2rem;
+    color: var(--rose); margin-top: .4rem;
+  }
+  .letter-hearts { color: var(--rose); font-size: 1.2rem; letter-spacing: 6px; margin: .4rem 0; }
+
+  /* wax seal */
+  .seal {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--rose);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    margin: 0 auto .2rem;
+    box-shadow: 0 2px 12px rgba(232,49,90,.35);
+  }
+
+  /* ── CONFETTI BURST ──────────────────────────── */
+  .burst { position: fixed; inset: 0; pointer-events: none; z-index: 20; }
+  .burst span {
+    position: absolute;
+    animation: floatUp 2.5s linear forwards;
+    font-size: 1.8rem;
+  }
+  @keyframes floatUp {
+    from { transform: translateY(0) scale(1); opacity:1; }
+    to   { transform: translateY(-90vh) scale(.4) rotate(540deg); opacity:0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div class="page">
+
+  <h1 class="hero-title">Will you be my <em>Valentine</em>? 💕</h1>
+
+  <!-- cat stickers -->
+  <div class="cats-row">
+    <div class="cat-sticker">🐱<span class="label">be mine</span></div>
+    <div class="cat-sticker">😻<span class="label">i love u</span></div>
+    <div class="cat-sticker">🐾<span class="label">paw-fect</span></div>
+    <div class="cat-sticker">🐈<span class="label">fur-ever</span></div>
+    <div class="cat-sticker">🩷<span class="label">so cute</span></div>
+  </div>
+
+  <!-- big heartbeat -->
+  <div class="big-heart">❤️</div>
+
+  <!-- gif placeholder — swap src for your own -->
+  <img src="https://media.tenor.com/EBV7OT7ACfwAAAAj/u-u-qua-qua-u-quaa.gif"
+       alt="cute cat"
+       style="width:160px;border-radius:50%;border:4px solid #f9a8c0;box-shadow:0 4px 24px rgba(192,53,90,.2);animation:fadeUp .9s .3s ease both;"/>
+
+  <!-- buttons -->
+  <div class="btn-row">
+    <button class="btn btn-yes" onclick="onYes()">Yes 💖</button>
+    <button class="btn btn-no" id="noBtn" onmouseover="dodge(this)" onclick="dodge(this)">No 🙅</button>
+  </div>
+
+  <!-- envelope -->
+  <div class="envelope-wrap">
+    <button class="open-btn" id="openBtn" onclick="toggleLetter()">💌 Read my letter to you</button>
+    <div class="envelope-card" id="envCard">
+      <div class="env-flap">💌</div>
+      <div class="letter-inner">
+        <div class="seal">🌹</div>
+        <h3>My dearest love,</h3>
+        <p>Some feelings are too big for everyday words, so I saved them for a letter — just for you.</p>
+        <p>You are my favourite part of every single day. The way you laugh, the way you care, the way you make the world feel softer — I notice all of it, always.</p>
+        <p>If I could pick anyone in the whole world to share my heart with, I would choose you. A thousand times, without hesitation. 🐱</p>
+        <p>So here is my question, written in the most sincere ink I own:</p>
+        <div class="letter-hearts">♥ ♥ ♥</div>
+        <p><strong>Will you be my Valentine?</strong></p>
+        <p class="sign">Yours, forever and always 🌹</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="burst" id="burst"></div>
+
+<script>
+/* ── FALLING HEARTS CANVAS ─────────────────────────── */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+const HEARTS = ['❤️','🩷','💕','💗','💓','🌸','🌹','💝'];
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+function spawnHeart() {
+  return {
+    x: Math.random() * W,
+    y: -30,
+    emoji: HEARTS[Math.floor(Math.random() * HEARTS.length)],
+    size: 14 + Math.random() * 18,
+    speed: 1.2 + Math.random() * 2,
+    drift: (Math.random() - .5) * .6,
+    rot: (Math.random() - .5) * .04,
+    angle: 0,
+    opacity: .7 + Math.random() * .3
+  };
+}
+
+for (let i = 0; i < 22; i++) {
+  const h = spawnHeart();
+  h.y = Math.random() * H;
+  particles.push(h);
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  if (Math.random() < .04) particles.push(spawnHeart());
+
+  particles.forEach(p => {
+    p.y += p.speed;
+    p.x += p.drift;
+    p.angle += p.rot;
+    ctx.save();
+    ctx.globalAlpha = p.opacity;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    ctx.font = p.size + 'px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.emoji, 0, 0);
+    ctx.restore();
+  });
+
+  particles = particles.filter(p => p.y < H + 40);
+  requestAnimationFrame(loop);
+}
+loop();
+
+/* ── BUTTONS ─────────────────────────── */
+function onYes() {
+  document.querySelector('.hero-title').innerHTML =
+    'Yay! I love you so much! 🎉💖';
+  confettiBurst();
+}
+
+function dodge(btn) {
+  const maxX = window.innerWidth  - 90;
+  const maxY = window.innerHeight - 50;
+  btn.style.position = 'fixed';
+  btn.style.left = Math.random() * maxX + 'px';
+  btn.style.top  = Math.random() * maxY + 'px';
+  btn.style.zIndex = 5;
+}
+
+/* ── LETTER ─────────────────────────── */
+function toggleLetter() {
+  const card = document.getElementById('envCard');
+  const btn  = document.getElementById('openBtn');
+  card.classList.toggle('open');
+  btn.textContent = card.classList.contains('open')
+    ? '💌 Close the letter'
+    : '💌 Read my letter to you';
+}
+
+/* ── CONFETTI ────────────────────────── */
+function confettiBurst() {
+  const b = document.getElementById('burst');
+  b.innerHTML = '';
+  for (let i = 0; i < 50; i++) {
+    const s = document.createElement('span');
+    s.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.top  = 60 + Math.random() * 40 + 'vh';
+    s.style.fontSize = (16 + Math.random() * 20) + 'px';
+    s.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    s.style.animationDelay   = (Math.random() * .6) + 's';
+    b.appendChild(s);
+  }
+  setTimeout(() => b.innerHTML = '', 4000);
+}
+</script>
+</body>
+</html>
